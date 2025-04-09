@@ -1,5 +1,5 @@
 //  NotificationService.h
-//  OneSignalNotificationServiceExtension
+//  FirebaseNotificationServiceExtension
 
 #import <UserNotifications/UserNotifications.h>
 

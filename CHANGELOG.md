@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## April 2025
+### '3.0.0` - 09/04/2025
+- Move to Firebase 
 ## October 2023
 ### `2.0.2` - 10/16/23
 #### Changes
@@ -46,7 +49,7 @@ All notable changes to this project will be documented in this file.
 
 ### `1.1.2` - 10/04/22
 #### Fixes
-- Specify `use_frameworks` on `OneSignalNotificationServiceExtension` target in iOS Podfile when applicable (i.e. the app target also specifies `use_frameworks`).
+- Specify `use_frameworks` on `FirebaseNotificationServiceExtension` target in iOS Podfile when applicable (i.e. the app target also specifies `use_frameworks`).
 
 ## September 2022
 ### `1.1.1` - 09/06/22
