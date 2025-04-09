@@ -4,6 +4,6 @@ export class FirebaseLog {
   }
 
   static error(str: string) {
-    console.error(`\tirebase-expo-extension-plugin: ${str}`)
+    console.error(`\tfirebase-expo-extension-plugin: ${str}`)
   }
 }

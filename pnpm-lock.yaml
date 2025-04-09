@@ -8,10 +8,22 @@ importers:
 
   .:
     dependencies:
+      '@expo/config-plugins':
+        specifier: ^9.0.17
+        version: 9.0.17
       '@expo/image-utils':
         specifier: ^0.6.5
         version: 0.6.5
     devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3.3.1
+        version: 3.3.1
+      '@expo/config-types':
+        specifier: ^52.0.5
+        version: 52.0.5
+      '@types/node':
+        specifier: ^22.14.0
+        version: 22.14.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.29.1
         version: 8.29.1(@typescript-eslint/parser@8.29.1(eslint@9.24.0)(typescript@5.8.3))(eslint@9.24.0)(typescript@5.8.3)
@@ -30,6 +42,9 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
+      typescript-eslint:
+        specifier: ^8.29.1
+        version: 8.29.1(eslint@9.24.0)(typescript@5.8.3)
 
 packages:
 
@@ -5188,6 +5203,13 @@ packages:
 
   typedarray-to-buffer@3.1.5:
     resolution: {integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==}
+
+  typescript-eslint@8.29.1:
+    resolution: {integrity: sha512-f8cDkvndhbQMPcysk6CUSGBWV+g1utqdn71P5YKwMumVMOG/5k7cHq0KyG4O52nB0oKS4aN2Tp5+wB4APJGC+w==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '>=4.8.4 <5.9.0'
 
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
@@ -12369,6 +12391,16 @@ snapshots:
   typedarray-to-buffer@3.1.5:
     dependencies:
       is-typedarray: 1.0.0
+
+  typescript-eslint@8.29.1(eslint@9.24.0)(typescript@5.8.3):
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 8.29.1(@typescript-eslint/parser@8.29.1(eslint@9.24.0)(typescript@5.8.3))(eslint@9.24.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.29.1(eslint@9.24.0)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.29.1(eslint@9.24.0)(typescript@5.8.3)
+      eslint: 9.24.0
+      typescript: 5.8.3
+    transitivePeerDependencies:
+      - supports-color
 
   typescript@5.8.3: {}
 

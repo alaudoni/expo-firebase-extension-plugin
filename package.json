@@ -1,11 +1,11 @@
 {
-  "name": "expo-firebase-extension-plugin",
-  "version": "3.0.0",
+  "name": "@abstract-cl/expo-firebase-extension-plugin",
+  "version": "3.0.6",
   "description": "The Firebase Expo plugin allows you to use Firebase without leaving the managed workflow. Developed in collaboration with SweetGreen.",
   "main": "./app.plugin.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pnpm run lint && rm -rf build && tsc && cp -a support/serviceExtensionFiles build/support/",
+    "build": "rm -rf build && tsc && cp -a support/serviceExtensionFiles build/support/",
     "lint": "eslint . --ext .ts",
     "prepare": "pnpm run build"
   },
@@ -22,12 +22,24 @@
   ],
   "author": "rgomezp",
   "contributors": [
-    "Pablo de Cárcer",
-    "Karen Grigoryan",
-    "Rodrigo Gomez-Palacio",
-    "Charlie Cruzan",
-    "Wojciech Kozyra",
-    "Brian Smith"
+    {
+      "name": "Pablo de Cárcer"
+    },
+    {
+      "name": "Karen Grigoryan"
+    },
+    {
+      "name": "Rodrigo Gomez-Palacio"
+    },
+    {
+      "name": "Charlie Cruzan"
+    },
+    {
+      "name": "Wojciech Kozyra"
+    },
+    {
+      "name": "Brian Smith"
+    }
   ],
   "license": "MIT",
   "bugs": {
@@ -35,14 +47,22 @@
   },
   "homepage": "https://github.com/abstract-cl/expo-firebase-extension-pluginn#readme",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@expo/config-types": "^52.0.5",
+    "@types/node": "^22.14.0",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
     "eslint": "^9.24.0",
     "expo-module-scripts": "^4.0.5",
     "readme-md-generator": "^1.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   },
   "dependencies": {
+    "@expo/config-plugins": "^9.0.17",
     "@expo/image-utils": "^0.6.5"
+  },
+  "directories": {
+    "example": "examples"
   }
 }

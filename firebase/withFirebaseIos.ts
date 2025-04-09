@@ -117,7 +117,7 @@ const withFirebasePodfile: ConfigPlugin<FirebasePluginProps> = (config) => {
 
 const withFirebaseNSE: ConfigPlugin<FirebasePluginProps> = (config, props) => {
   // support for monorepos where node_modules can be above the project directory.
-  const pluginDir = require.resolve("Firebase-expo-plugin/package.json")
+  const pluginDir = require.resolve("@abstract-cl/expo-firebase-extension-plugin/package.json")
   const sourceDir = path.join(pluginDir, "../build/support/serviceExtensionFiles/")
 
   return withDangerousMod(config, [
