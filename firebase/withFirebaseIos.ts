@@ -5,30 +5,30 @@
 
 import {
   ConfigPlugin,
+  withDangerousMod,
   withEntitlementsPlist,
   withInfoPlist,
   withXcodeProject,
-  withDangerousMod
 } from "@expo/config-plugins";
-import * as fs from 'fs';
-import * as path from 'path';
+import { ExpoConfig } from "@expo/config-types";
+import assert from "assert";
+import * as fs from "fs";
+import * as path from "path";
+import getEasManagedCredentialsConfigExtra from "../support/eas/getEasManagedCredentialsConfigExtra";
+import { FileManager } from "../support/FileManager";
+import { FirebaseLog } from "../support/FirebaseLog";
 import {
   DEFAULT_BUNDLE_SHORT_VERSION,
   DEFAULT_BUNDLE_VERSION,
   IPHONEOS_DEPLOYMENT_TARGET,
-  NSE_TARGET_NAME,
-  NSE_SOURCE_FILE,
   NSE_EXT_FILES,
-  TARGETED_DEVICE_FAMILY
+  NSE_SOURCE_FILE,
+  NSE_TARGET_NAME,
+  TARGETED_DEVICE_FAMILY,
 } from "../support/iosConstants";
-import { updatePodfile } from "../support/updatePodfile";
 import NseUpdaterManager from "../support/NseUpdaterManager";
-import { FirebaseLog } from "../support/FirebaseLog";
-import { FileManager } from "../support/FileManager";
+import { updatePodfile } from "../support/updatePodfile";
 import { FirebasePluginProps } from "../types/types";
-import assert from 'assert';
-import getEasManagedCredentialsConfigExtra from "../support/eas/getEasManagedCredentialsConfigExtra";
-import { ExpoConfig } from '@expo/config-types';
 
 /**
  * Add 'aps-environment' record with current environment to '<project-name>.entitlements' file
@@ -43,8 +43,7 @@ const withAppEnvironment: ConfigPlugin<FirebasePluginProps> = (
       throw new Error(`
         Missing required "mode" key in your app.json or app.config.js file for "Firebase-expo-plugin".
         "mode" can be either "development" or "production".
-        Please see Firebase-expo-plugin's README.md for more details.`
-      )
+        Please see Firebase-expo-plugin's README.md for more details.`);
     }
     newConfig.modResults["aps-environment"] = FirebaseProps.mode;
     return newConfig;
@@ -77,16 +76,16 @@ const withRemoteNotificationsPermissions: ConfigPlugin<FirebasePluginProps> = (
  * Add "App Group" permission
  * @see https://rnfirebase.io/messaging/ios-notification-images#main (step 4.4)
  */
-const withAppGroupPermissions: ConfigPlugin<FirebasePluginProps> = (
-  config
-) => {
+const withAppGroupPermissions: ConfigPlugin<FirebasePluginProps> = (config) => {
   const APP_GROUP_KEY = "com.apple.security.application-groups";
-  return withEntitlementsPlist(config, newConfig => {
+  return withEntitlementsPlist(config, (newConfig) => {
     if (!Array.isArray(newConfig.modResults[APP_GROUP_KEY])) {
       newConfig.modResults[APP_GROUP_KEY] = [];
     }
-    const modResultsArray = (newConfig.modResults[APP_GROUP_KEY] as Array<any>);
-    const entitlement = `group.${newConfig?.ios?.bundleIdentifier || ""}.Firebase`;
+    const modResultsArray = newConfig.modResults[APP_GROUP_KEY] as Array<any>;
+    const entitlement = `group.${
+      newConfig?.ios?.bundleIdentifier || ""
+    }.Firebase`;
     if (modResultsArray.indexOf(entitlement) !== -1) {
       return newConfig;
     }
@@ -96,34 +95,46 @@ const withAppGroupPermissions: ConfigPlugin<FirebasePluginProps> = (
   });
 };
 
-const withEasManagedCredentials: ConfigPlugin<FirebasePluginProps> = (config) => {
-  assert(config.ios?.bundleIdentifier, "Missing 'ios.bundleIdentifier' in app config.")
+const withEasManagedCredentials: ConfigPlugin<FirebasePluginProps> = (
+  config
+) => {
+  assert(
+    config.ios?.bundleIdentifier,
+    "Missing 'ios.bundleIdentifier' in app config."
+  );
   config.extra = getEasManagedCredentialsConfigExtra(config as ExpoConfig);
   return config;
-}
+};
 
 const withFirebasePodfile: ConfigPlugin<FirebasePluginProps> = (config) => {
   return withDangerousMod(config, [
-    'ios',
-    async config => {
+    "ios",
+    async (config) => {
       // not awaiting in order to not block main thread
-      const iosRoot = path.join(config.modRequest.projectRoot, "ios")
-      updatePodfile(iosRoot).catch(err => { FirebaseLog.error(err) });
+      const iosRoot = path.join(config.modRequest.projectRoot, "ios");
+      updatePodfile(iosRoot).catch((err) => {
+        FirebaseLog.error(err);
+      });
 
       return config;
     },
   ]);
-}
+};
 
 const withFirebaseNSE: ConfigPlugin<FirebasePluginProps> = (config, props) => {
   // support for monorepos where node_modules can be above the project directory.
-  const pluginDir = require.resolve("@abstract-cl/expo-firebase-extension-plugin/package.json")
-  const sourceDir = path.join(pluginDir, "../build/support/serviceExtensionFiles/")
+  const pluginDir = require.resolve(
+    "@alaudoni/expo-firebase-extension-plugin/package.json"
+  );
+  const sourceDir = path.join(
+    pluginDir,
+    "../build/support/serviceExtensionFiles/"
+  );
 
   return withDangerousMod(config, [
-    'ios',
-    async config => {
-      const iosPath = path.join(config.modRequest.projectRoot, "ios")
+    "ios",
+    async (config) => {
+      const iosPath = path.join(config.modRequest.projectRoot, "ios");
 
       /* COPY OVER EXTENSION FILES */
       fs.mkdirSync(`${iosPath}/${NSE_TARGET_NAME}`, { recursive: true });
@@ -135,38 +146,58 @@ const withFirebaseNSE: ConfigPlugin<FirebasePluginProps> = (config, props) => {
       }
 
       // Copy NSE source file either from configuration-provided location, falling back to the default one.
-      const sourcePath = props.iosNSEFilePath ?? `${sourceDir}${NSE_SOURCE_FILE}`
+      const sourcePath =
+        props.iosNSEFilePath ?? `${sourceDir}${NSE_SOURCE_FILE}`;
       const targetFile = `${iosPath}/${NSE_TARGET_NAME}/${NSE_SOURCE_FILE}`;
       await FileManager.copyFile(`${sourcePath}`, targetFile);
 
       /* MODIFY COPIED EXTENSION FILES */
       const nseUpdater = new NseUpdaterManager(iosPath);
-      await nseUpdater.updateNSEEntitlements(`group.${config.ios?.bundleIdentifier}.Firebase`)
-      await nseUpdater.updateNSEBundleVersion(config.ios?.buildNumber ?? DEFAULT_BUNDLE_VERSION);
-      await nseUpdater.updateNSEBundleShortVersion(config?.version ?? DEFAULT_BUNDLE_SHORT_VERSION);
+      await nseUpdater.updateNSEEntitlements(
+        `group.${config.ios?.bundleIdentifier}.Firebase`
+      );
+      await nseUpdater.updateNSEBundleVersion(
+        config.ios?.buildNumber ?? DEFAULT_BUNDLE_VERSION
+      );
+      await nseUpdater.updateNSEBundleShortVersion(
+        config?.version ?? DEFAULT_BUNDLE_SHORT_VERSION
+      );
 
       return config;
     },
   ]);
-}
+};
 
-const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (config, props) => {
-  return withXcodeProject(config, newConfig => {
-    const xcodeProject = newConfig.modResults
+const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (
+  config,
+  props
+) => {
+  return withXcodeProject(config, (newConfig) => {
+    const xcodeProject = newConfig.modResults;
 
     if (!!xcodeProject.pbxTargetByName(NSE_TARGET_NAME)) {
-      FirebaseLog.log(`${NSE_TARGET_NAME} already exists in project. Skipping...`);
+      FirebaseLog.log(
+        `${NSE_TARGET_NAME} already exists in project. Skipping...`
+      );
       return newConfig;
     }
 
     // Create new PBXGroup for the extension
-    const extGroup = xcodeProject.addPbxGroup([...NSE_EXT_FILES, NSE_SOURCE_FILE], NSE_TARGET_NAME, NSE_TARGET_NAME);
+    const extGroup = xcodeProject.addPbxGroup(
+      [...NSE_EXT_FILES, NSE_SOURCE_FILE],
+      NSE_TARGET_NAME,
+      NSE_TARGET_NAME
+    );
 
     // Add the new PBXGroup to the top level group. This makes the
     // files / folder appear in the file explorer in Xcode.
     const groups = xcodeProject.hash.project.objects["PBXGroup"];
-    Object.keys(groups).forEach(function(key) {
-      if (typeof groups[key] === "object" && groups[key].name === undefined && groups[key].path === undefined) {
+    Object.keys(groups).forEach(function (key) {
+      if (
+        typeof groups[key] === "object" &&
+        groups[key].name === undefined &&
+        groups[key].path === undefined
+      ) {
         xcodeProject.addToPbxGroup(extGroup.uuid, key);
       }
     });
@@ -176,12 +207,19 @@ const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (config, pro
     // An upstream fix should be made to the code referenced in this link:
     //   - https://github.com/apache/cordova-node-xcode/blob/8b98cabc5978359db88dc9ff2d4c015cba40f150/lib/pbxProject.js#L860
     const projObjects = xcodeProject.hash.project.objects;
-    projObjects['PBXTargetDependency'] = projObjects['PBXTargetDependency'] || {};
-    projObjects['PBXContainerItemProxy'] = projObjects['PBXTargetDependency'] || {};
+    projObjects["PBXTargetDependency"] =
+      projObjects["PBXTargetDependency"] || {};
+    projObjects["PBXContainerItemProxy"] =
+      projObjects["PBXTargetDependency"] || {};
 
     // Add the NSE target
     // This adds PBXTargetDependency and PBXContainerItemProxy for you
-    const nseTarget = xcodeProject.addTarget(NSE_TARGET_NAME, "app_extension", NSE_TARGET_NAME, `${config.ios?.bundleIdentifier}.${NSE_TARGET_NAME}`);
+    const nseTarget = xcodeProject.addTarget(
+      NSE_TARGET_NAME,
+      "app_extension",
+      NSE_TARGET_NAME,
+      `${config.ios?.bundleIdentifier}.${NSE_TARGET_NAME}`
+    );
 
     // Add build phases to the new target
     xcodeProject.addBuildPhase(
@@ -190,7 +228,12 @@ const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (config, pro
       "Sources",
       nseTarget.uuid
     );
-    xcodeProject.addBuildPhase([], "PBXResourcesBuildPhase", "Resources", nseTarget.uuid);
+    xcodeProject.addBuildPhase(
+      [],
+      "PBXResourcesBuildPhase",
+      "Resources",
+      nseTarget.uuid
+    );
 
     xcodeProject.addBuildPhase(
       [],
@@ -209,7 +252,8 @@ const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (config, pro
       ) {
         const buildSettingsObj = configurations[key].buildSettings;
         buildSettingsObj.DEVELOPMENT_TEAM = props?.devTeam;
-        buildSettingsObj.IPHONEOS_DEPLOYMENT_TARGET = props?.iPhoneDeploymentTarget ?? IPHONEOS_DEPLOYMENT_TARGET;
+        buildSettingsObj.IPHONEOS_DEPLOYMENT_TARGET =
+          props?.iPhoneDeploymentTarget ?? IPHONEOS_DEPLOYMENT_TARGET;
         buildSettingsObj.TARGETED_DEVICE_FAMILY = TARGETED_DEVICE_FAMILY;
         buildSettingsObj.CODE_SIGN_ENTITLEMENTS = `${NSE_TARGET_NAME}/${NSE_TARGET_NAME}.entitlements`;
         buildSettingsObj.CODE_SIGN_STYLE = "Automatic";
@@ -217,19 +261,26 @@ const withFirebaseXcodeProject: ConfigPlugin<FirebasePluginProps> = (config, pro
     }
 
     // Add development teams to both your target and the original project
-    xcodeProject.addTargetAttribute("DevelopmentTeam", props?.devTeam, nseTarget);
+    xcodeProject.addTargetAttribute(
+      "DevelopmentTeam",
+      props?.devTeam,
+      nseTarget
+    );
     xcodeProject.addTargetAttribute("DevelopmentTeam", props?.devTeam);
     return newConfig;
-  })
-}
+  });
+};
 
-export const withFirebaseIos: ConfigPlugin<FirebasePluginProps> = (config, props) => {
+export const withFirebaseIos: ConfigPlugin<FirebasePluginProps> = (
+  config,
+  props
+) => {
   config = withAppEnvironment(config, props);
   config = withRemoteNotificationsPermissions(config, props);
   config = withAppGroupPermissions(config, props);
-  config = withFirebasePodfile(config, props)
-  config = withFirebaseNSE(config, props)
-  config = withFirebaseXcodeProject(config, props)
+  config = withFirebasePodfile(config, props);
+  config = withFirebaseNSE(config, props);
+  config = withFirebaseXcodeProject(config, props);
   config = withEasManagedCredentials(config, props);
   return config;
 };

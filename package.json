@@ -1,5 +1,5 @@
 {
-  "name": "@abstract-cl/expo-firebase-extension-plugin",
+  "name": "@alaudoni/expo-firebase-extension-plugin",
   "version": "3.0.6",
   "description": "The Firebase Expo plugin allows you to use Firebase without leaving the managed workflow. Developed in collaboration with SweetGreen.",
   "main": "./app.plugin.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abstract-cl/expo-firebase-extension-plugin.git"
+    "url": "git+https://github.com/alaudoni/expo-firebase-extension-plugin"
   },
   "keywords": [
     "expo",
@@ -43,9 +43,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/abstract-cl/expo-firebase-extension-pluginissues"
+    "url": "https://github.com/alaudoni/expo-firebase-extension-plugin#issues"
   },
-  "homepage": "https://github.com/abstract-cl/expo-firebase-extension-pluginn#readme",
+  "homepage": "https://github.com/alaudoni/expo-firebase-extension-plugin#readme",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@expo/config-types": "^52.0.5",
