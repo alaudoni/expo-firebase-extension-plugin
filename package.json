@@ -1,6 +1,6 @@
 {
   "name": "@alaudoni/expo-firebase-extension-plugin",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "The Firebase Expo plugin allows you to use Firebase without leaving the managed workflow. Developed in collaboration with SweetGreen.",
   "main": "./app.plugin.js",
   "scripts": {
